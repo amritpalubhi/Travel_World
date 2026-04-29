@@ -8,6 +8,11 @@ import userRoute from './routes/users.js'
 import authRoute from './routes/auth.js'
 import reviewRoute from './routes/reviews.js'
 import bookingRoute from './routes/bookings.js'
+import otpRoute from './routes/otp.js'
+import chatbotRoute from "./routes/chatbot.js";
+
+
+
 
 
 dotenv.config()
@@ -45,6 +50,10 @@ app.use("/api/v1/users", userRoute)
 app.use("/api/v1/auth", authRoute)
 app.use("/api/v1/review", reviewRoute)
 app.use("/api/v1/booking", bookingRoute)
+app.use("/api/otp", otpRoute)
+app.use("/api/chatbot", chatbotRoute);
+
+
 
 
 app.listen(port, ()=>{
