@@ -3,13 +3,11 @@ import User from "../models/User.js";
 import { sendOTPEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
 
-// Generate 6-digit OTP
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Send OTP
-export const sendOTP = async (req,res) => {
+export const sendOTP = async (req, res) => {
   try {
     const email = req.body.email;
 
@@ -20,57 +18,51 @@ export const sendOTP = async (req,res) => {
       });
     }
 
-    // Check if user exists, if not create new user
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
+
     if (!user) {
-      user = new User({
-        email: email,
-        username: email.split("@")[0], 
-        role: "user",
+      return res.status(404).json({
+        success: false,
+        message: "User not registered. Please register first.",
       });
-      await user.save();
     }
 
-    // Generate OTP
     const otp = generateOTP();
 
-    // Delete any existing OTPs for this email
     await Otp.deleteMany({ email });
 
-    // Save new OTP
-    const newOtp = new Otp({ 
-      email: email, 
-      otp: otp 
+    const newOtp = new Otp({
+      email,
+      otp,
     });
+
     await newOtp.save();
 
-    // Send OTP via email
     const emailResult = await sendOTPEmail(email, otp);
 
-    if (emailResult.success) {
-      res.status(200).json({
-        success: true,
-        message: "OTP sent to your email",
-      });
-    } else {
-      res.status(500).json({
+    if (!emailResult.success) {
+      return res.status(500).json({
         success: false,
         message: "Failed to send OTP",
       });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
   }
+  
 };
 
-// Verify OTP and Login
 export const verifyOTP = async (req, res) => {
   try {
-    const email = req.body.email;
-    const otp = req.body.otp;
+    const { email, otp } = req.body;
 
     if (!email || !otp) {
       return res.status(400).json({
@@ -79,7 +71,6 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // Find OTP in database
     const otpRecord = await Otp.findOne({ email, otp });
 
     if (!otpRecord) {
@@ -89,7 +80,6 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -99,34 +89,31 @@ export const verifyOTP = async (req, res) => {
       });
     }
 
-    // Create JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "15d" }
     );
 
-    // Delete used OTP
     await Otp.deleteOne({ _id: otpRecord._id });
 
     const { password, role, ...rest } = user._doc;
 
-    // Send response with token
-    res
+    return res
       .cookie("accessToken", token, {
         httpOnly: true,
-        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       })
       .status(200)
       .json({
         success: true,
         message: "Login successful",
-        token: token,
+        token,
         data: { ...rest },
-        role: role,
+        role,
       });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to login",
     });

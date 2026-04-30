@@ -1,96 +1,9 @@
-// import React,{useState,useContext} from 'react'
-// import { Container, Row, Col, Form,FormGroup, Button } from 'reactstrap'
-// import { Link, useNavigate } from 'react-router-dom'
-// import '../styles/Login.css'
-// import { assets } from '../assets/assets'
-// import { AuthContext } from '../context/AuthContext'
-// import { BASE_URL } from '../utils/config'
-
-
-// const Login = () => {
-
-//   const[credentials,setCredentials] = useState({
-//     email:undefined,
-//     password:undefined
-// })
-
-// const {dispatch} = useContext(AuthContext)
-// const navigate = useNavigate()
-
-
-//   const handleChange = e=>{
-//     setCredentials(prev => ({...prev, [e.target.id]:e.target.value}))
-
-// }
-// const handleClick = async e=>{
-//   e.preventDefault()
-
-//   try {
-//     const res = await fetch(`${BASE_URL}/auth/login` ,{
-//       method: 'post',
-//       headers: {'Content-Type': 'application/json'},
-//       credentials:'include',
-//       body: JSON.stringify(credentials)
-//     })
-//     const result = await res.json()
-//     if(!res.ok)alert(result.message)
-
-//       console.log(result.data)
-
-//       dispatch({type:'LOGIN_SUCCESS' , payload:result.data})
-//       navigate('/')
-
-//   } catch (err) {
-//     dispatch({type:'LOGIN_FAILURE' , payload:err.message})
-//   }
-// }
-//   return (
-//     <section>
-//       <Container>
-//         <Row>
-//           <Col lg='8' className='m-auto'>
-//             <div className='login__container d-flex justify-content-between'>
-//               <div className='login__img'>
-//                 <img src={assets.loginImg} alt=''/>
-//               </div>
-
-//               <div className='login__form'>
-//                 <div className='user'>
-//                   <img src={assets.userIcon} alt=''/>
-//                 </div>
-//                 <h2>Login</h2>
-
-//                 <Form onSubmit={handleClick} >
-//                   <FormGroup>
-//                     <input type='email' placeholder='Email' 
-//                     required id='email' 
-//                     onChange={handleChange}/>
-//                   </FormGroup>
-//                   <FormGroup>
-//                   <input
-//                     type='password'
-//                     placeholder='Password' 
-//                     required id='password' 
-//                     onChange={handleChange}/>
-//                   </FormGroup>
-//                   <Button className='btn secondary__btn auth__btn' type='submit'>Login</Button>
-//                 </Form>
-//                 <p>Dont't have an account? <Link to='/register'>Create</Link></p>
-//               </div>
-//             </div>
-//           </Col>
-//         </Row>
-//       </Container>
-//     </section>
-//   )
-// }
-
-// export default Login
 import React, { useState, useContext } from "react";
 import { Container, Row, Col, Form, FormGroup, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/Login.css";
+import { BASE_URL } from "../utils/config";
 
 const Login = () => {
   const [step, setStep] = useState(1);
@@ -100,9 +13,25 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [timer, setTimer] = useState(0);
   const [resendDisabled, setResendDisabled] = useState(false);
-  
+
   const navigate = useNavigate();
   const { dispatch } = useContext(AuthContext);
+
+  const startTimer = () => {
+    setResendDisabled(true);
+    setTimer(60);
+
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setResendDisabled(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const handleSendOTP = async (e) => {
     e.preventDefault();
@@ -110,9 +39,11 @@ const Login = () => {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:4000/api/otp/send", {
+      const response = await fetch(`${BASE_URL}/otp/send`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email }),
       });
 
@@ -136,11 +67,13 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
+    
     try {
-      const response = await fetch("http://localhost:4000/api/otp/verify", {
+      const response = await fetch(`${BASE_URL}/otp/verify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, otp }),
       });
 
@@ -164,20 +97,27 @@ const Login = () => {
 
   const handleResendOTP = async () => {
     if (resendDisabled) return;
-    
+
     setLoading(true);
+    setMessage("");
+
     try {
-      const response = await fetch("http://localhost:4000/api/otp/send", {
+      const response = await fetch(`${BASE_URL}/otp/send`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
+
       if (data.success) {
         setMessage("✅ New OTP sent!");
         setOtp("");
         startTimer();
+      } else {
+        setMessage(data.message || "❌ Failed to resend OTP");
       }
     } catch (error) {
       setMessage("❌ Failed to resend OTP");
@@ -186,96 +126,95 @@ const Login = () => {
     }
   };
 
-  const startTimer = () => {
-    setResendDisabled(true);
-    setTimer(60);
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setResendDisabled(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   return (
-    <section className="otp-login-section">
+    <section>
       <Container>
-        <Row>
-          <Col lg="6" className="m-auto">
-            <div className="otp-login-container">
-              <div className="otp-header">
-                <h2>🔐 Secure Login</h2>
-                <p>Login with OTP - No password needed!</p>
-              </div>
+        <Row className="justify-content-center">
+          <Col lg="6" md="8">
+            <div className="login__container p-4 shadow rounded">
+              <h2 className="text-center mb-3">🔐 Secure Login</h2>
+              <p className="text-center text-muted mb-4">
+                Login with OTP - No password needed!
+              </p>
 
               {message && (
-                <div className={`otp-message ${message.includes("✅") ? "success" : "error"}`}>
-                  {message}
-                </div>
+                <p className="text-center text-info fw-semibold">{message}</p>
               )}
 
               {step === 1 && (
-                <Form onSubmit={handleSendOTP} className="otp-form">
+                <Form onSubmit={handleSendOTP}>
                   <FormGroup>
-                    <label>📧 Email Address</label>
+                    <label className="mb-2">📧 Email Address</label>
                     <input
                       type="email"
                       placeholder="Enter your email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="otp-input"
+                      className="form-control otp-input"
                     />
                   </FormGroup>
 
-                  <Button className="otp-btn primary" type="submit" disabled={loading}>
+                  <Button
+                    className="btn primary__btn w-100 mt-3"
+                    type="submit"
+                    disabled={loading}
+                  >
                     {loading ? "Sending..." : "Send OTP →"}
                   </Button>
                 </Form>
               )}
 
               {step === 2 && (
-                <Form onSubmit={handleVerifyOTP} className="otp-form">
-                  <p className="otp-sent-to">
+                <Form onSubmit={handleVerifyOTP}>
+                  <p className="text-center mb-3">
                     OTP sent to <strong>{email}</strong>
                   </p>
 
                   <FormGroup>
-                    <label>🔢 Enter 6-Digit OTP</label>
+                    <label className="mb-2">🔢 Enter 6-Digit OTP</label>
                     <input
                       type="text"
                       placeholder="000000"
                       required
                       maxLength="6"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                      className="otp-input otp-code"
+                      onChange={(e) =>
+                        setOtp(e.target.value.replace(/\D/g, ""))
+                      }
+                      className="form-control otp-input otp-code"
                     />
                   </FormGroup>
 
-                  <Button className="otp-btn primary" type="submit" disabled={loading || otp.length !== 6}>
+                  <Button
+                    className="btn primary__btn w-100 mt-3"
+                    type="submit"
+                    disabled={loading}
+                  >
                     {loading ? "Verifying..." : "Verify & Login →"}
                   </Button>
 
-                  <div className="otp-resend">
+                  <div className="text-center mt-3">
                     {resendDisabled ? (
-                      <span>Resend OTP in {timer}s</span>
+                      <span className="text-muted">Resend OTP in {timer}s</span>
                     ) : (
-                      <button type="button" onClick={handleResendOTP} className="link-btn">
+                      <Button
+                        color="link"
+                        className="p-0"
+                        type="button"
+                        onClick={handleResendOTP}
+                        disabled={loading}
+                      >
                         Resend OTP
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </Form>
               )}
 
-              <div className="otp-footer">
-                <p>🔒 Your data is secure and encrypted</p>
-              </div>
+              <p className="text-center mt-4 text-muted">
+                🔒 Your data is secure and encrypted
+              </p>
             </div>
           </Col>
         </Row>
@@ -285,4 +224,3 @@ const Login = () => {
 };
 
 export default Login;
-

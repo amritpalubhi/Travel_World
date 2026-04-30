@@ -1,0 +1,53 @@
+/* ========== ONLY NEW ELEMENTS CSS ========== */
+
+/* Success Message - Green Box */
+.success__msg {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Error Message - Red Box */
+.error__msg {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Info Message - Gray Box with Orange Border */
+.info__msg {
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #9b5b00;
+  border-radius: 5px;
+  border-left: 3px solid #faa935;
+}
+
+.info__msg small {
+  display: block;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* Button Disabled State */
+.auth__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ccc !important;
+}
+

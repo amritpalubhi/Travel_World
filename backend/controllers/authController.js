@@ -4,30 +4,49 @@ import jwt from 'jsonwebtoken'
 
 //user registration
 
-export const register = async (req,res) => {
+// backend/controllers/authController.js
+
+export const register = async (req, res) => {
     try {
+        const { username, email } = req.body
 
-        //hashing password
-        const salt = bcrypt.genSaltSync(10)
-        const hash = bcrypt.hashSync(req.body.password, salt)
+        // Validation
+        if (!username || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Please provide both username and email' 
+            })
+        }
 
+        // Check if user already exists
+        const existingUser = await User.findOne({ email })
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'User already exists with this email' 
+            })
+        }
+
+        // Create new user
         const newUser = new User({
-            username: req.body.username,
-            email:req.body.email, 
-            password:hash,
+            username,
+            email,
+            photo: req.body.photo || ''
         })
 
         await newUser.save()
-        res.status(200).json({success: true,
-            message:"Successfully created"
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Registration successful! Please login with OTP.' 
         })
 
-    } catch(err){
-        res.status(500)
-        .json({success: false,
-            message:"Failed to create. Try again"
+    } catch (err) {
+        console.error('Registration error:', err)
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error. Please try again later.' 
         })
-
     }
 }
 //user login
