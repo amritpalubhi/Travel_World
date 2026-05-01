@@ -5,50 +5,31 @@ import { AuthContext } from "../context/AuthContext";
 import "../styles/Login.css";
 import { BASE_URL } from "../utils/config";
 
+const OTP_URL = BASE_URL.replace('/api/v1', '/api')
+
 const Login = () => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [timer, setTimer] = useState(0);
+  const [step, setStep]                   = useState(1);
+  const [email, setEmail]                 = useState("");
+  const [otp, setOtp]                     = useState("");
+  const [loading, setLoading]             = useState(false);
+  const [message, setMessage]             = useState("");
+  const [timer, setTimer]                 = useState(0);
   const [resendDisabled, setResendDisabled] = useState(false);
 
   const navigate = useNavigate();
   const { dispatch } = useContext(AuthContext);
 
-  const startTimer = () => {
-    setResendDisabled(true);
-    setTimer(60);
-
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setResendDisabled(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
     try {
-      const response = await fetch(`${BASE_URL}/otp/send`, {
+      const response = await fetch(`${OTP_URL}/otp/send`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-
       const data = await response.json();
-
       if (data.success) {
         setMessage("✅ OTP sent! Check your email.");
         setStep(2);
@@ -56,7 +37,7 @@ const Login = () => {
       } else {
         setMessage(data.message || "❌ Failed to send OTP");
       }
-    } catch (error) {
+    } catch {
       setMessage("❌ Error sending OTP. Try again.");
     } finally {
       setLoading(false);
@@ -67,28 +48,27 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    
     try {
-      const response = await fetch(`${BASE_URL}/otp/verify`, {
+      const response = await fetch(`${OTP_URL}/otp/verify`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, otp }),
       });
-
       const data = await response.json();
-
       if (data.success) {
-        dispatch({ type: "LOGIN_SUCCESS", payload: data.data });
-        localStorage.setItem("user", JSON.stringify(data.data));
+        // Store role inside user object so admin check works
+        const userWithRole = { ...data.data, role: data.role };
+        dispatch({ type: "LOGIN_SUCCESS", payload: userWithRole });
+        localStorage.setItem("user", JSON.stringify(userWithRole));
         localStorage.setItem("token", data.token);
         setMessage("✅ Login successful!");
-        setTimeout(() => navigate("/"), 1000);
+        // Redirect admin to dashboard, others to home
+        setTimeout(() => navigate(data.role === "admin" ? "/admin" : "/"), 1000);
       } else {
         setMessage(data.message || "❌ Invalid OTP");
       }
-    } catch (error) {
+    } catch {
       setMessage("❌ Error verifying OTP");
     } finally {
       setLoading(false);
@@ -97,124 +77,87 @@ const Login = () => {
 
   const handleResendOTP = async () => {
     if (resendDisabled) return;
-
     setLoading(true);
-    setMessage("");
-
     try {
-      const response = await fetch(`${BASE_URL}/otp/send`, {
+      const response = await fetch(`${OTP_URL}/otp/send`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-
       const data = await response.json();
-
-      if (data.success) {
-        setMessage("✅ New OTP sent!");
-        setOtp("");
-        startTimer();
-      } else {
-        setMessage(data.message || "❌ Failed to resend OTP");
-      }
-    } catch (error) {
+      if (data.success) { setMessage("✅ New OTP sent!"); setOtp(""); startTimer(); }
+    } catch {
       setMessage("❌ Failed to resend OTP");
     } finally {
       setLoading(false);
     }
   };
 
+  const startTimer = () => {
+    setResendDisabled(true);
+    setTimer(60);
+    const interval = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) { clearInterval(interval); setResendDisabled(false); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   return (
-    <section>
+    <section className="otp-login-section">
       <Container>
-        <Row className="justify-content-center">
-          <Col lg="6" md="8">
-            <div className="login__container p-4 shadow rounded">
-              <h2 className="text-center mb-3">🔐 Secure Login</h2>
-              <p className="text-center text-muted mb-4">
-                Login with OTP - No password needed!
-              </p>
+        <Row>
+          <Col lg="6" className="m-auto">
+            <div className="otp-login-container">
+              <div className="otp-header">
+                <h2>🔐 Secure Login</h2>
+                <p>Login with OTP - No password needed!</p>
+              </div>
 
               {message && (
-                <p className="text-center text-info fw-semibold">{message}</p>
+                <div className={`otp-message ${message.includes("✅") ? "success" : "error"}`}>
+                  {message}
+                </div>
               )}
 
               {step === 1 && (
-                <Form onSubmit={handleSendOTP}>
+                <Form onSubmit={handleSendOTP} className="otp-form">
                   <FormGroup>
-                    <label className="mb-2">📧 Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="form-control otp-input"
-                    />
+                    <label>📧 Email Address</label>
+                    <input type="email" placeholder="Enter your email" required
+                      value={email} onChange={e => setEmail(e.target.value)} className="otp-input" />
                   </FormGroup>
-
-                  <Button
-                    className="btn primary__btn w-100 mt-3"
-                    type="submit"
-                    disabled={loading}
-                  >
+                  <Button className="otp-btn primary" type="submit" disabled={loading}>
                     {loading ? "Sending..." : "Send OTP →"}
                   </Button>
                 </Form>
               )}
 
               {step === 2 && (
-                <Form onSubmit={handleVerifyOTP}>
-                  <p className="text-center mb-3">
-                    OTP sent to <strong>{email}</strong>
-                  </p>
-
+                <Form onSubmit={handleVerifyOTP} className="otp-form">
+                  <p className="otp-sent-to">OTP sent to <strong>{email}</strong></p>
                   <FormGroup>
-                    <label className="mb-2">🔢 Enter 6-Digit OTP</label>
-                    <input
-                      type="text"
-                      placeholder="000000"
-                      required
-                      maxLength="6"
-                      value={otp}
-                      onChange={(e) =>
-                        setOtp(e.target.value.replace(/\D/g, ""))
-                      }
-                      className="form-control otp-input otp-code"
-                    />
+                    <label>🔢 Enter 6-Digit OTP</label>
+                    <input type="text" placeholder="000000" required maxLength="6"
+                      value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ""))}
+                      className="otp-input otp-code" />
                   </FormGroup>
-
-                  <Button
-                    className="btn primary__btn w-100 mt-3"
-                    type="submit"
-                    disabled={loading}
-                  >
+                  <Button className="otp-btn primary" type="submit" disabled={loading || otp.length !== 6}>
                     {loading ? "Verifying..." : "Verify & Login →"}
                   </Button>
-
-                  <div className="text-center mt-3">
-                    {resendDisabled ? (
-                      <span className="text-muted">Resend OTP in {timer}s</span>
-                    ) : (
-                      <Button
-                        color="link"
-                        className="p-0"
-                        type="button"
-                        onClick={handleResendOTP}
-                        disabled={loading}
-                      >
-                        Resend OTP
-                      </Button>
-                    )}
+                  <div className="otp-resend">
+                    {resendDisabled
+                      ? <span>Resend OTP in {timer}s</span>
+                      : <button type="button" onClick={handleResendOTP} className="link-btn">Resend OTP</button>
+                    }
                   </div>
                 </Form>
               )}
 
-              <p className="text-center mt-4 text-muted">
-                🔒 Your data is secure and encrypted
-              </p>
+              <div className="otp-footer">
+                <p>🔒 Your data is secure and encrypted</p>
+              </div>
             </div>
           </Col>
         </Row>

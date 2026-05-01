@@ -88,3 +88,33 @@
       display: none; /* Hide the menu icon when the screen width is 768px or more */
     }
   }
+.nav__profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--secondary-color, #faa935);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav__username {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--heading-color);
+}
+
+.nav__profile:hover .nav__username {
+  color: var(--secondary-color, #faa935);
+}
