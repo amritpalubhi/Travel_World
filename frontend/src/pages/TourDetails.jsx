@@ -2,7 +2,6 @@ import React,{useEffect, useRef, useState, useContext} from 'react'
 import '../styles/TourDetails.css'
 import {Container, Row, Col, Form, ListGroup} from 'reactstrap'
 import { useParams} from 'react-router-dom'
-import tourData from '../assets/data/tours'
 import calculateAvgRating from '../utils/avgRating'
 import { assets } from '../assets/assets'
 import Booking from '../components/Booking/Booking'
@@ -19,7 +18,7 @@ const TourDetails = () => {
 
 
   //fetch data from database
-  const {data:tour , loading, error, console} = useFetch(`${BASE_URL}/tours/${id}`)
+  const {data:tour , loading, error} = useFetch(`${BASE_URL}/tours/${id}`)
 
   //destruction properties from tour object
   const {photo, title, desc, price, reviews = [],address, city, distance, maxGroupSize} = tour || {};
