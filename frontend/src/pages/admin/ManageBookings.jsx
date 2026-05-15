@@ -10,7 +10,14 @@ const ManageBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res  = await fetch(`${BASE_URL}/booking`, { credentials: 'include' })
+        const token = localStorage.getItem('token')
+
+const res  = await fetch(`${BASE_URL}/booking`, { 
+  credentials: 'include',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
         const data = await res.json()
         if (!res.ok) return setError(data.message || 'Failed to load bookings')
         setBookings(data.data || [])

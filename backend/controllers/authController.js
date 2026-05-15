@@ -71,22 +71,23 @@ export const login = async (req,res) => {
         }
         const {password, role, ...rest} = user._doc
 
-        //create jwt token
-        const token = jwt.sign(
-            {id:user._id, role: user.role},
+                const token = jwt.sign(
+            { id: user._id, role: user.role },
             process.env.JWT_SECRET_KEY,
-            {expiresIn: "15d"}
+            { expiresIn: process.env.JWT_EXPIRES_IN || "15d" }
         )
 
-        //set token in the browser cookies and send the response to the client
-        res.cookie("accessToken", token,{
-            httpOnly:true,
-            expires: token.expiresIn,
+        // set token in the browser cookies and send the response to the client
+        res.cookie("accessToken", token, {
+            httpOnly: true,
+            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+            sameSite: 'Lax',   // good for localhost
+            secure: false      // localhost is http, not https
         })
         .status(200)
         .json({
            token,
-           data:{...rest},
+           data: { ...rest },
            role
         })
 

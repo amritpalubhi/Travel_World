@@ -12,6 +12,7 @@ import otpRoute     from './routes/otp.js'
 import chatbotRoute from './routes/chatbot.js'
 import paymentRoute from './routes/payment.js'
 import uploadRoute  from './routes/upload.js'
+import weatherRoute from './routes/weather.js'
 
 dotenv.config()
 const app  = express()
@@ -29,7 +30,11 @@ const connect = async () => {
 }
 
 app.use(express.json())
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }))
+// app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }))
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}))
 app.use(cookieParser())
 
 app.use('/api/v1/tours',   tourRoute)
@@ -41,6 +46,7 @@ app.use('/api/v1/payment', paymentRoute)
 app.use('/api/v1/upload',  uploadRoute)
 app.use('/api/otp',        otpRoute)
 app.use('/api/chatbot',    chatbotRoute)
+app.use('/api/V1/weather',    weatherRoute)
 
 app.listen(port, () => {
   connect()

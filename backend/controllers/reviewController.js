@@ -1,20 +1,36 @@
+// backend/controllers/reviewController.js
+
 import Tour from "../models/Tour.js"
 import Review from '../models/Review.js'
+
 export const createReview = async (req,res) =>{
     const tourId = req.params.tourId
-    const newReview = new Review({...req.body})
-
+    const newReview = new Review({ ...req.body })
 
     try{
         const savedReview = await newReview.save()
 
-        //after creating a new review new update the reviews array of the tour
-        await Tour.findByIdAndUpdate(tourId,{
-            $push:{reviews:savedReview._id}
+        // after creating a new review update the reviews array of the tour
+        await Tour.findByIdAndUpdate(tourId, {
+            $push:{ reviews:savedReview._id }
         })
 
-        res.status(200).json({success:true, message:'Review submitted', data:savedReview})
+        res.status(200).json({ success:true, message:'Review submitted', data:savedReview })
     } catch(err){
-        res.status(500).json({success:false, message:'failed to submit'})
+        res.status(500).json({ success:false, message:'failed to submit' })
+    }
+}
+
+// 👉 NEW: get all reviews for admin
+export const getAllReviews = async (req, res) => {
+    try {
+        const reviews = await Review.find().sort({ createdAt: -1 })
+        res.status(200).json({
+            success: true,
+            message: 'Reviews fetched successfully',
+            data: reviews
+        })
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to load reviews' })
     }
 }

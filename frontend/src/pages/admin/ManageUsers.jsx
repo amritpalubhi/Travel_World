@@ -11,7 +11,14 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const res  = await fetch(`${BASE_URL}/users`, { credentials: 'include' })
+      const token = localStorage.getItem('token')
+
+const res = await fetch(`${BASE_URL}/users`, { 
+  credentials: 'include',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
       const data = await res.json()
       if (!res.ok) return setError(data.message || 'Failed to load users')
       setUsers(data.data || [])

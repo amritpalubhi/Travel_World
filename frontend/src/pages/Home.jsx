@@ -8,6 +8,7 @@ import ServiceList from '../services/ServicesList'
 import FeaturedTourList from '../components/FeaturedTours/FeaturedTourList'
 import MasonryImagesGallery from '../components/Image-gallery/MasonryImagesGallery'
 import Testimonials from '../components/Testimonial/Testimonials'
+import WeatherWidget from '../components/Weather/WeatherWidget'
 const Home = () => {
   return (
    <>
@@ -56,6 +57,9 @@ const Home = () => {
           <Col lg='3'>
             <h5 className='services__subtitle'>What we serve</h5>
             <h2 className='services_title'>We offer our best services</h2>
+            <div style={{ marginTop: '1.5rem' }}>
+              <WeatherWidget />
+            </div>
           </Col>
           <ServiceList/>
         </Row>
