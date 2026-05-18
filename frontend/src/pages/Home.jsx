@@ -96,6 +96,11 @@ const Home = () => {
           </Col>
           <FeaturedTourList/>
         </Row>
+        <Row className="mt-4">
+      <Col lg="12">
+        <ServiceList />
+      </Col>
+    </Row>
       </Container>
     </section>
     {/*===============featured tour section end=================*/}
