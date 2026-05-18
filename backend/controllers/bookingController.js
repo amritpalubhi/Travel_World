@@ -46,26 +46,45 @@ export const getBooking = async(req,res) =>{
     }
 }
 
-//get all booking
-export const getAllBooking = async(req,res) =>{
-    
-    try {
-        const books = await Booking.find()
+/// Get all bookings (admin) or filter by user email for profile page
+export const getAllBooking = async (req, res) => {
+  try {
+    const { email } = req.query
 
-        res
-        .status(200)
-        .json({
-            success:true,
-            message:'successful',
-            data:books
-        })
-        
-    } catch (err) {
-        res
-        .status(500)
-        .json({
-        success:false,
-        message:'internal server error'
-        })
+    // If email is provided → filter by userEmail
+    const filter = email ? { userEmail: email } : {}
+
+    const bookings = await Booking.find(filter).sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      message: 'Bookings found',
+      data: bookings
+    })
+  } catch (err) {
+    console.error('Get bookings error:', err.message)
+    res.status(500).json({ success: false, message: 'Failed to fetch bookings' })
+  }
+}
+// Get bookings for currently logged-in user (profile page)
+export const getUserBookings = async (req, res) => {
+  try {
+    // Prefer query param; fall back to token if present
+    const userEmail = req.query.email || req.user?.email
+
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: 'User email not found' })
     }
+
+    const bookings = await Booking.find({ userEmail }).sort({ createdAt: -1 })
+
+    return res.status(200).json({
+      success: true,
+      message: 'User bookings found',
+      data: bookings
+    })
+  } catch (err) {
+    console.error('Get user bookings error:', err.message)
+    return res.status(500).json({ success: false, message: 'Failed to fetch bookings' })
+  }
 }

@@ -37,11 +37,11 @@ const WeatherWidget = () => {
   }
 
   return (
-    <div className="weather-card">
-      <h4>Calculate Weather</h4>
-      <p style={{ fontSize: '0.9rem', color: '#777' }}>
+    <div className="service__item weather-card">
+      <h5 className="service__subtitle">Calculate Weather</h5>
+      <h6 className="service__title">
         See the next few days and plan your trip with confidence.
-      </p>
+      </h6>
 
       <form onSubmit={handleCheck} className="weather-form">
         <input

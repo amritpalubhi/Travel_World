@@ -52,32 +52,41 @@ const Home = () => {
     </section>
 
     <section>
-      <Container>
-        <Row>
-          <Col lg='3'>
-            <h5 className='services__subtitle'>What we serve</h5>
-            <h2 className='services_title'>We offer our best services</h2>
-            <div style={{ marginTop: '1.5rem' }}>
-              <WeatherWidget />
-            </div>
-          </Col>
-          <ServiceList/>
-        </Row>
-      </Container>
-    </section>
+  <Container>
+    <Row>
+      <Col lg='3'>
+        <h5 className='services__subtitle'>What we serve</h5>
+        <h2 className='services_title'>We offer our best services</h2>
+      </Col>
 
-    {/*===============featured tour section start=================*/}
-    <section>
-      <Container>
-        <Row>
-          <Col lg='12' className='mb-5'>
-            <Subtitle subtitle={'Explore'}/>
-            <h2 className='featured__tour-title'>Our featured tours</h2>
-          </Col>
-          <FeaturedTourList/>
-        </Row>
-      </Container>
-    </section>
+      <Col lg='9'>
+        <div className="services__grid">
+          <WeatherWidget />
+
+          <div className="service__item">
+            <span className="service__icon">
+              <i className="ri-team-line"></i>
+            </span>
+            <h5>Best Tour Guide</h5>
+            <p>
+              Explore with knowledgeable guides who animate destinations.
+            </p>
+          </div>
+
+          <div className="service__item">
+            <span className="service__icon">
+              <i className="ri-settings-3-line"></i>
+            </span>
+            <h5>Customization</h5>
+            <p>
+              Tailor your trip to your preferences and create your dream vacation.
+            </p>
+          </div>
+        </div>
+      </Col>
+    </Row>
+  </Container>
+</section>
     {/*===============featured tour section end=================*/}
 
     {/*===========gallery section starts============*/}

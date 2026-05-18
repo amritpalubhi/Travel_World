@@ -12,17 +12,40 @@ const UserProfile = () => {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
 
-  useEffect(() => {
+   useEffect(() => {
     if (!user) return navigate('/login')
+
     const fetchBookings = async () => {
       try {
-        const res  = await fetch(`${BASE_URL}/booking/my/${user.email}`, { credentials: 'include' })
-        const data = await res.json()
-        if (!res.ok) return setError(data.message || 'Failed to load bookings')
-        setBookings(data.data || [])
-      } catch { setError('Failed to fetch bookings') }
-      finally  { setLoading(false) }
+        const token = localStorage.getItem('token')
+
+const res = await fetch(
+  `${BASE_URL}/booking/user/me?email=${encodeURIComponent(user.email)}`,
+  {
+    credentials: 'include',
+    headers: {
+      'Authorization': `Bearer ${token}`
     }
+  }
+)
+
+        const data = await res.json()
+
+        if (!res.ok || !data.success) {
+          setError(data.message || 'Failed to load bookings')
+          setBookings([])
+          return
+        }
+
+        setBookings(data.data || [])
+      } catch {
+        setError('Failed to fetch bookings')
+        setBookings([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchBookings()
   }, [user, navigate])
 

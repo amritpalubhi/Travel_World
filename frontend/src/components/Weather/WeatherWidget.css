@@ -1,19 +1,19 @@
+/* Only refine the content inside the service__item */
+
 .weather-card {
-  padding: 1.25rem;
-  border-radius: 12px;
-  background: #fff7eb;
-  border: 1px solid #ffe0b3;
-  max-width: 360px;
+  /* do NOT set margin-top or width here, let the layout handle it */
 }
 
-.weather-form {
+/* small form layout inside the card */
+.weather-card .weather-form {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
 }
 
-.weather-input {
+.weather-card .weather-input {
   flex: 1;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
@@ -21,7 +21,8 @@
   font-size: 0.9rem;
 }
 
-.weather-btn {
+.weather-card .weather-btn {
+  align-self: flex-start;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   border: none;
@@ -29,45 +30,32 @@
   color: white;
   font-size: 0.85rem;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-.weather-btn:disabled {
+.weather-card .weather-btn:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-.weather-error {
+.weather-card .weather-error {
   font-size: 0.8rem;
   color: #c0392b;
 }
 
-.weather-result {
+.weather-card .weather-result {
   margin-top: 0.5rem;
 }
 
-.weather-main {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.weather-main img {
-  width: 48px;
-  height: 48px;
-}
-
-.weather-desc {
-  font-size: 0.85rem;
-  color: #555;
-}
-.weather-days {
+/* 5‑day mini cards */
+.weather-card .weather-days {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 0.4rem;
   margin-top: 0.5rem;
 }
 
-.weather-day-card {
+.weather-card .weather-day-card {
   background: #fff;
   border-radius: 8px;
   padding: 0.4rem 0.5rem;
@@ -75,15 +63,15 @@
   font-size: 0.75rem;
 }
 
-.weather-day-date {
+.weather-card .weather-day-date {
   font-weight: 600;
   margin-bottom: 0.1rem;
 }
 
-.weather-day-temps {
+.weather-card .weather-day-temps {
   color: #333;
 }
 
-.weather-day-desc {
+.weather-card .weather-day-desc {
   color: #777;
 }
